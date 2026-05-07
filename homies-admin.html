@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homies Admin Panel — Team Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+
+:root {
+  --bg:      #03020a;
+  --deep:    #07051a;
+  --panel:   #0d0b26;
+  --panel2:  #130f35;
+  --surface: #1a1740;
+  --border:  rgba(139,92,246,0.2);
+  --violet:  #8b5cf6;
+  --vbright: #a78bfa;
+  --green:   #4ade80;
+  --red:     #f87171;
+  --yellow:  #fbbf24;
+  --text:    #e2deff;
+  --muted:   #9d9dbf;
+}
+
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Exo 2', sans-serif; min-height: 100vh;
+}
+
+/* ---- LOGIN SCREEN ---- */
+#login-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, rgba(109,40,217,.25) 0%, transparent 70%);
+}
+.login-box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 420px;
+  text-align: center;
+  box-shadow: 0 40px 80px rgba(0,0,0,.6);
+  position: relative; overflow: hidden;
+}
+.login-box::before {
+  content:''; position:absolute; top:0; left:15%; right:15%; height:2px;
+  background: linear-gradient(90deg, transparent, var(--violet), transparent);
+}
+.login-logo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 4px;
+  background: linear-gradient(135deg, var(--vbright), #f0abfc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+.login-sub {
+  font-family: 'Share Tech Mono', monospace; font-size: .65rem;
+  letter-spacing: 3px; color: var(--muted); text-transform: uppercase;
+  margin-bottom: 36px;
+}
+.login-input {
+  width: 100%; background: var(--deep); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; color: var(--text);
+  font-family: 'Exo 2', sans-serif; font-size: .95rem;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+  margin-bottom: 14px;
+}
+.login-input:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139,92,246,.15); }
+.login-btn {
+  width: 100%; padding: 14px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, #7c3aed, var(--violet));
+  color: #fff; font-family: 'Exo 2', sans-serif;
+  font-size: .9rem; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; cursor: pointer;
+  transition: box-shadow .2s, transform .2s;
+}
+.login-btn:hover { box-shadow: 0 0 30px rgba(139,92,246,.5); transform: translateY(-2px); }
+.login-err {
+  margin-top: 12px; font-size: .82rem; color: var(--red);
+  font-family: 'Share Tech Mono', monospace;
+  display: none;
+}
+
+/* ---- ADMIN LAYOUT ---- */
+#admin-screen { display: none; min-height: 100vh; }
+
+header {
+  background: rgba(3,2,10,.8); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.hd-logo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 3px;
+  background: linear-gradient(90deg, var(--vbright), #f0abfc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hd-right { display: flex; align-items: center; gap: 16px; }
+.hd-user {
+  font-family: 'Share Tech Mono', monospace; font-size: .7rem;
+  color: var(--muted); letter-spacing: 1px;
+}
+.hd-logout {
+  background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3);
+  color: var(--red); padding: 6px 14px; border-radius: 6px;
+  font-size: .75rem; font-weight: 700; letter-spacing: 1px;
+  cursor: pointer; font-family: 'Exo 2', sans-serif;
+  transition: background .2s;
+}
+.hd-logout:hover { background: rgba(248,113,113,.2); }
+
+.admin-body {
+  max-width: 1100px; margin: 0 auto; padding: 40px 24px;
+}
+
+/* Setup banner */
+.setup-banner {
+  background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.3);
+  border-radius: 12px; padding: 16px 20px; margin-bottom: 32px;
+  font-size: .85rem; line-height: 1.7;
+}
+.setup-banner strong { color: var(--yellow); }
+.setup-banner code {
+  background: rgba(255,255,255,.07); padding: 2px 7px; border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace; font-size: .82rem;
+  color: var(--vbright);
+}
+.copy-btn {
+  display: inline-block; margin-left: 8px; padding: 1px 8px;
+  background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.3);
+  border-radius: 4px; color: var(--vbright); font-size: .72rem;
+  cursor: pointer; transition: background .15s;
+}
+.copy-btn:hover { background: rgba(139,92,246,.3); }
+
+/* Section header */
+.sec-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.sec-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem;
+  letter-spacing: 2px; color: var(--vbright);
+}
+.add-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #7c3aed, var(--violet));
+  color: #fff; padding: 10px 22px; border-radius: 8px;
+  font-family: 'Exo 2', sans-serif; font-size: .82rem; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; border: none;
+  transition: box-shadow .2s, transform .2s;
+}
+.add-btn:hover { box-shadow: 0 0 24px rgba(139,92,246,.5); transform: translateY(-2px); }
+
+/* Filter tabs */
+.filter-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.ftab {
+  padding: 7px 16px; border-radius: 100px;
+  font-family: 'Share Tech Mono', monospace; font-size: .68rem;
+  letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  transition: all .2s;
+}
+.ftab.active, .ftab:hover {
+  border-color: var(--violet); color: var(--vbright);
+  background: rgba(139,92,246,.08);
+}
+
+/* Members table */
+.members-table {
+  width: 100%; border-collapse: collapse;
+}
+.members-table th {
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  padding: 12px 16px; text-align: left;
+  font-family: 'Share Tech Mono', monospace; font-size: .65rem;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+}
+.members-table td {
+  padding: 14px 16px; border-bottom: 1px solid rgba(139,92,246,.07);
+  font-size: .88rem; vertical-align: middle;
+}
+.members-table tr:hover td { background: rgba(139,92,246,.04); }
+.member-row-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover;
+}
+.member-row-av-fb {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: .9rem;
+  background: linear-gradient(135deg, #3730a3, #7c3aed);
+}
+.role-chip {
+  display: inline-block; padding: 3px 10px; border-radius: 100px;
+  font-family: 'Share Tech Mono', monospace; font-size: .62rem;
+  letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;
+}
+.ig-link {
+  color: var(--vbright); text-decoration: none; font-size: .82rem;
+  transition: opacity .2s;
+}
+.ig-link:hover { opacity: .7; }
+.action-btn {
+  padding: 5px 12px; border-radius: 6px; border: none;
+  font-size: .72rem; font-weight: 700; cursor: pointer;
+  font-family: 'Exo 2', sans-serif; letter-spacing: 1px;
+  transition: opacity .2s;
+}
+.action-btn:hover { opacity: .8; }
+.btn-edit { background: rgba(139,92,246,.15); color: var(--vbright); border: 1px solid rgba(139,92,246,.3); }
+.btn-delete { background: rgba(248,113,113,.12); color: var(--red); border: 1px solid rgba(248,113,113,.3); margin-left: 6px; }
+.empty-state {
+  text-align: center; padding: 60px; color: var(--muted);
+  font-family: 'Share Tech Mono', monospace; font-size: .8rem; letter-spacing: 2px;
+}
+.table-wrap {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; overflow-x: auto;
+}
+
+/* Loading */
+.loading-row td {
+  text-align: center; padding: 50px;
+  font-family: 'Share Tech Mono', monospace; font-size: .75rem;
+  letter-spacing: 2px; color: var(--muted);
+}
+.mini-spin {
+  display: inline-block; width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(139,92,246,.2); border-top-color: var(--vbright);
+  animation: spin .7s linear infinite; vertical-align: middle; margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- MODAL ---- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px; width: 100%; max-width: 500px;
+  position: relative; transform: translateY(20px);
+  transition: transform .25s;
+  box-shadow: 0 40px 80px rgba(0,0,0,.6);
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal::before {
+  content:''; position:absolute; top:0; left:15%; right:15%; height:2px;
+  background: linear-gradient(90deg, transparent, var(--violet), transparent);
+}
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+  letter-spacing: 2px; color: var(--vbright); margin-bottom: 28px;
+}
+.modal-close {
+  position: absolute; top: 18px; right: 18px;
+  background: none; border: none; color: var(--muted);
+  font-size: 1.2rem; cursor: pointer; transition: color .2s;
+}
+.modal-close:hover { color: var(--text); }
+
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block; font-family: 'Share Tech Mono', monospace;
+  font-size: .65rem; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.form-label span { color: var(--red); }
+.form-input, .form-select {
+  width: 100%; background: var(--deep); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; color: var(--text);
+  font-family: 'Exo 2', sans-serif; font-size: .9rem;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.form-input:focus, .form-select:focus {
+  border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139,92,246,.12);
+}
+.form-select option { background: var(--panel); }
+.form-hint {
+  font-size: .73rem; color: var(--muted); margin-top: 5px;
+  font-family: 'Share Tech Mono', monospace;
+}
+.pfp-preview {
+  margin-top: 10px; display: flex; align-items: center; gap: 12px;
+}
+.pfp-img {
+  width: 50px; height: 50px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border);
+  display: none;
+}
+
+.modal-actions { display: flex; gap: 12px; margin-top: 28px; justify-content: flex-end; }
+.modal-cancel {
+  padding: 11px 24px; border-radius: 8px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); font-family: 'Exo 2', sans-serif;
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.modal-cancel:hover { border-color: var(--violet); color: var(--text); }
+.modal-save {
+  padding: 11px 28px; border-radius: 8px; border: none;
+  background: linear-gradient(135deg, #7c3aed, var(--violet));
+  color: #fff; font-family: 'Exo 2', sans-serif;
+  font-size: .82rem; font-weight: 800; letter-spacing: 1px;
+  cursor: pointer; transition: box-shadow .2s, transform .2s;
+}
+.modal-save:hover { box-shadow: 0 0 20px rgba(139,92,246,.5); transform: translateY(-1px); }
+.modal-save:disabled { opacity: .5; pointer-events: none; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 28px; right: 28px; z-index: 9000;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 20px;
+  font-size: .85rem; font-family: 'Exo 2', sans-serif; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+  transform: translateY(80px); opacity: 0;
+  transition: transform .3s, opacity .3s;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: rgba(74,222,128,.4); color: var(--green); }
+.toast.error   { border-color: rgba(248,113,113,.4); color: var(--red); }
+
+/* Delete confirm */
+.del-confirm {
+  background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2);
+  border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;
+  font-size: .88rem; line-height: 1.6;
+}
+.del-confirm strong { color: var(--red); }
+
+@media (max-width: 600px) {
+  .admin-body { padding: 24px 14px; }
+  .members-table th:nth-child(4), .members-table td:nth-child(4) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">HOMIES</div>
+    <div class="login-sub">Admin Panel · Team Manager</div>
+    <input id="admin-pass" type="password" class="login-input" placeholder="Admin Password" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()">ACCESS PANEL</button>
+    <div id="login-err" class="login-err">❌ Wrong password. Try again.</div>
+  </div>
+</div>
+
+<!-- ==================== ADMIN ==================== -->
+<div id="admin-screen">
+  <header>
+    <div class="hd-logo">HOMIES ADMIN</div>
+    <div class="hd-right">
+      <span class="hd-user" id="hd-user-label">admin</span>
+      <button class="hd-logout" onclick="doLogout()">LOGOUT</button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+
+    <!-- Supabase setup guide -->
+    <div class="setup-banner" id="setup-banner">
+      <strong>⚙️ Setup Guide — Connect to Supabase</strong><br><br>
+      1. Go to <strong>supabase.com</strong> → New Project → Create a table called <code>team_members</code><br><br>
+      2. Run this SQL in the <strong>SQL Editor</strong>:<br><br>
+      <code id="sql-code">CREATE TABLE team_members (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  role text NOT NULL,
+  pfp_url text DEFAULT '',
+  instagram text DEFAULT '',
+  display_order integer DEFAULT 99,
+  created_at timestamptz DEFAULT now()
+);</code>
+      <button class="copy-btn" onclick="copySql()">COPY SQL</button><br><br>
+      3. Go to <strong>Project Settings → API</strong> and copy your <code>URL</code> and <code>anon public key</code><br><br>
+      4. Paste both below 👇
+    </div>
+
+    <!-- Supabase config inputs -->
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:32px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--vbright);margin-bottom:18px">🔗 SUPABASE CONNECTION</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <label class="form-label">Supabase URL</label>
+          <input id="cfg-url" class="form-input" placeholder="https://xxxx.supabase.co" oninput="saveConfig()">
+        </div>
+        <div>
+          <label class="form-label">Anon Public Key</label>
+          <input id="cfg-key" class="form-input" placeholder="eyJhbGci..." type="password" oninput="saveConfig()">
+        </div>
+      </div>
+      <button class="add-btn" style="margin-top:16px" onclick="testAndLoad()">TEST & LOAD TEAM</button>
+      <span id="conn-status" style="margin-left:12px;font-size:.8rem;font-family:'Share Tech Mono',monospace"></span>
+    </div>
+
+    <!-- Members list -->
+    <div class="sec-hd">
+      <div class="sec-title">👥 TEAM MEMBERS</div>
+      <button class="add-btn" onclick="openModal()">+ ADD MEMBER</button>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs">
+      <button class="ftab active" data-role="all" onclick="filterTable('all',this)">All</button>
+      <button class="ftab" data-role="founder" onclick="filterTable('founder',this)">🌟 Founder</button>
+      <button class="ftab" data-role="owner" onclick="filterTable('owner',this)">👑 Owner</button>
+      <button class="ftab" data-role="coowner" onclick="filterTable('coowner',this)">⚡ Co-Owner</button>
+      <button class="ftab" data-role="management" onclick="filterTable('management',this)">🛡️ Management</button>
+      <button class="ftab" data-role="respect" onclick="filterTable('respect',this)">🎖️ Respect</button>
+      <button class="ftab" data-role="friends" onclick="filterTable('friends',this)">🤝 Friends</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Instagram</th>
+            <th>Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="members-tbody">
+          <tr class="loading-row"><td colspan="6"><span class="mini-spin"></span>Connect Supabase to load team</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== MODAL ==================== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title">ADD MEMBER</div>
+
+    <div id="del-confirm-box" style="display:none"></div>
+
+    <div id="form-fields">
+      <input type="hidden" id="edit-id">
+
+      <div class="form-group">
+        <label class="form-label">Name <span>*</span></label>
+        <input id="f-name" class="form-input" placeholder="e.g. H0mieMaster">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Role <span>*</span></label>
+        <select id="f-role" class="form-select">
+          <option value="">-- Select Role --</option>
+          <option value="founder">🌟 Founder</option>
+          <option value="owner">👑 Owner</option>
+          <option value="coowner">⚡ Co-Owner</option>
+          <option value="management">🛡️ Management</option>
+          <option value="respect">🎖️ Respect Person</option>
+          <option value="friends">🤝 Friends</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Profile Picture URL</label>
+        <input id="f-pfp" class="form-input" placeholder="https://i.imgur.com/xxx.jpg" oninput="previewPfp()">
+        <div class="form-hint">Direct image link (imgur, discord CDN, etc.)</div>
+        <div class="pfp-preview">
+          <img id="pfp-prev-img" class="pfp-img" alt="preview">
+          <span id="pfp-prev-txt" style="font-size:.75rem;color:var(--muted);font-family:'Share Tech Mono',monospace">No image</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Instagram Username</label>
+        <input id="f-ig" class="form-input" placeholder="@username or username">
+        <div class="form-hint">Without @, or with — both work</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input id="f-order" class="form-input" type="number" placeholder="1" value="99">
+        <div class="form-hint">Lower number = shown first in their category</div>
+      </div>
+    </div>
+
+    <div class="modal-actions" id="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-save" id="modal-save-btn" onclick="saveMember()">SAVE MEMBER</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== CONFIG ====================
+const ADMIN_PASSWORD = 'homies2025'; // Change this!
+let SUPA_URL = '';
+let SUPA_KEY = '';
+let allMembers = [];
+let currentFilter = 'all';
+let deleteId = null;
+
+const ROLE_COLORS = {
+  founder:    { bg: 'rgba(249,115,22,.12)', color: '#fb923c', border: 'rgba(249,115,22,.3)' },
+  owner:      { bg: 'rgba(251,191,36,.1)',  color: '#fbbf24', border: 'rgba(251,191,36,.3)' },
+  coowner:    { bg: 'rgba(139,92,246,.1)',  color: '#a78bfa', border: 'rgba(139,92,246,.3)' },
+  management: { bg: 'rgba(52,211,153,.1)',  color: '#34d399', border: 'rgba(52,211,153,.3)' },
+  respect:    { bg: 'rgba(244,114,182,.1)', color: '#f472b6', border: 'rgba(244,114,182,.3)' },
+  friends:    { bg: 'rgba(129,140,248,.1)', color: '#818cf8', border: 'rgba(129,140,248,.3)' },
+};
+const ROLE_LABELS = {
+  founder:'🌟 Founder', owner:'👑 Owner', coowner:'⚡ Co-Owner',
+  management:'🛡️ Management', respect:'🎖️ Respect', friends:'🤝 Friends'
+};
+
+// ==================== AUTH ====================
+function doLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    loadSavedConfig();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('admin-pass').style.borderColor = 'rgba(248,113,113,.6)';
+  }
+}
+document.getElementById('admin-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('admin-pass').value = '';
+}
+
+// ==================== CONFIG ====================
+function saveConfig() {
+  SUPA_URL = document.getElementById('cfg-url').value.trim();
+  SUPA_KEY = document.getElementById('cfg-key').value.trim();
+  localStorage.setItem('hm_url', SUPA_URL);
+  localStorage.setItem('hm_key', SUPA_KEY);
+}
+function loadSavedConfig() {
+  const u = localStorage.getItem('hm_url') || '';
+  const k = localStorage.getItem('hm_key') || '';
+  document.getElementById('cfg-url').value = u;
+  document.getElementById('cfg-key').value = k;
+  SUPA_URL = u; SUPA_KEY = k;
+  if (u && k) testAndLoad();
+}
+
+async function testAndLoad() {
+  saveConfig();
+  if (!SUPA_URL || !SUPA_KEY) { showToast('Enter Supabase URL and Key first', 'error'); return; }
+  const status = document.getElementById('conn-status');
+  status.style.color = 'var(--muted)'; status.textContent = '⏳ Connecting...';
+  try {
+    const data = await apiFetch('GET');
+    allMembers = data || [];
+    renderTable(allMembers);
+    status.style.color = 'var(--green)'; status.textContent = '✅ Connected!';
+    document.getElementById('setup-banner').style.display = 'none';
+    showToast('Connected! ' + allMembers.length + ' members loaded', 'success');
+  } catch(e) {
+    status.style.color = 'var(--red)'; status.textContent = '❌ Failed — check URL/Key';
+    showToast('Connection failed: ' + e.message, 'error');
+  }
+}
+
+// ==================== API ====================
+async function apiFetch(method, body, id) {
+  let url = `${SUPA_URL}/rest/v1/team_members`;
+  if (id) url += `?id=eq.${id}`;
+  else if (method === 'GET') url += '?select=*&order=display_order.asc,created_at.asc';
+  const opts = {
+    method,
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal',
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  if (method === 'GET') return res.json();
+  if (method === 'POST') return res.json();
+  return null;
+}
+
+// ==================== TABLE ====================
+function renderTable(members) {
+  const filtered = currentFilter === 'all' ? members : members.filter(m => m.role === currentFilter);
+  const tbody = document.getElementById('members-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No members found for this category</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(m => {
+    const rc = ROLE_COLORS[m.role] || ROLE_COLORS.friends;
+    const rl = ROLE_LABELS[m.role] || m.role;
+    const initials = m.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const igHandle = m.instagram ? (m.instagram.startsWith('@') ? m.instagram : '@'+m.instagram) : '—';
+    const igUrl = m.instagram ? 'https://instagram.com/'+m.instagram.replace('@','') : '#';
+    return `<tr>
+      <td>
+        ${m.pfp_url
+          ? `<img class="member-row-av" src="${m.pfp_url}" alt="${m.name}" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'">`
+          : ''}
+        <div class="member-row-av-fb" style="display:${m.pfp_url?'none':'inline-flex'}">${initials}</div>
+      </td>
+      <td><strong>${m.name}</strong></td>
+      <td><span class="role-chip" style="background:${rc.bg};color:${rc.color};border:1px solid ${rc.border}">${rl}</span></td>
+      <td>${m.instagram ? `<a class="ig-link" href="${igUrl}" target="_blank">📸 ${igHandle}</a>` : '<span style="color:var(--muted);font-size:.8rem">—</span>'}</td>
+      <td style="color:var(--muted);font-size:.82rem">${m.display_order ?? 99}</td>
+      <td>
+        <button class="action-btn btn-edit" onclick="openModal('${m.id}')">✏️ Edit</button>
+        <button class="action-btn btn-delete" onclick="confirmDelete('${m.id}','${m.name}')">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable(role, btn) {
+  currentFilter = role;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(allMembers);
+}
+
+// ==================== MODAL ====================
+function openModal(id) {
+  deleteId = null;
+  document.getElementById('del-confirm-box').style.display = 'none';
+  document.getElementById('form-fields').style.display = 'block';
+  document.getElementById('modal-actions').innerHTML = `
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    <button class="modal-save" id="modal-save-btn" onclick="saveMember()">SAVE MEMBER</button>`;
+
+  if (id) {
+    const m = allMembers.find(x => x.id === id);
+    if (!m) return;
+    document.getElementById('modal-title').textContent = 'EDIT MEMBER';
+    document.getElementById('edit-id').value = m.id;
+    document.getElementById('f-name').value = m.name;
+    document.getElementById('f-role').value = m.role;
+    document.getElementById('f-pfp').value = m.pfp_url || '';
+    document.getElementById('f-ig').value = m.instagram || '';
+    document.getElementById('f-order').value = m.display_order ?? 99;
+    previewPfp();
+  } else {
+    document.getElementById('modal-title').textContent = 'ADD MEMBER';
+    document.getElementById('edit-id').value = '';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-role').value = '';
+    document.getElementById('f-pfp').value = '';
+    document.getElementById('f-ig').value = '';
+    document.getElementById('f-order').value = 99;
+    document.getElementById('pfp-prev-img').style.display = 'none';
+    document.getElementById('pfp-prev-txt').textContent = 'No image';
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function confirmDelete(id, name) {
+  deleteId = id;
+  document.getElementById('form-fields').style.display = 'none';
+  document.getElementById('modal-title').textContent = 'DELETE MEMBER';
+  const box = document.getElementById('del-confirm-box');
+  box.style.display = 'block';
+  box.innerHTML = `<div class="del-confirm">Are you sure you want to remove <strong>${name}</strong> from the team?<br><br>This action <strong>cannot be undone</strong>.</div>`;
+  document.getElementById('modal-actions').innerHTML = `
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    <button class="modal-save" style="background:linear-gradient(135deg,#b91c1c,#ef4444)" onclick="deleteMember()">DELETE</button>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOutside(e) { if(e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+async function saveMember() {
+  const name = document.getElementById('f-name').value.trim();
+  const role = document.getElementById('f-role').value;
+  if (!name || !role) { showToast('Name and Role are required', 'error'); return; }
+
+  const payload = {
+    name,
+    role,
+    pfp_url:       document.getElementById('f-pfp').value.trim(),
+    instagram:     document.getElementById('f-ig').value.trim().replace('@',''),
+    display_order: parseInt(document.getElementById('f-order').value) || 99,
+  };
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.disabled = true; btn.textContent = 'SAVING...';
+
+  try {
+    const id = document.getElementById('edit-id').value;
+    if (id) {
+      await apiFetch('PATCH', payload, id);
+      const idx = allMembers.findIndex(m => m.id === id);
+      if (idx > -1) allMembers[idx] = { ...allMembers[idx], ...payload };
+      showToast('Member updated!', 'success');
+    } else {
+      const created = await apiFetch('POST', payload);
+      if (created && created[0]) allMembers.push(created[0]);
+      showToast('Member added!', 'success');
+    }
+    allMembers.sort((a,b) => (a.display_order||99) - (b.display_order||99));
+    renderTable(allMembers);
+    closeModal();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+  btn.disabled = false; btn.textContent = 'SAVE MEMBER';
+}
+
+async function deleteMember() {
+  if (!deleteId) return;
+  try {
+    await apiFetch('DELETE', null, deleteId);
+    allMembers = allMembers.filter(m => m.id !== deleteId);
+    renderTable(allMembers);
+    closeModal();
+    showToast('Member deleted', 'success');
+  } catch(e) {
+    showToast('Delete failed: ' + e.message, 'error');
+  }
+}
+
+// ==================== HELPERS ====================
+function previewPfp() {
+  const url = document.getElementById('f-pfp').value.trim();
+  const img = document.getElementById('pfp-prev-img');
+  const txt = document.getElementById('pfp-prev-txt');
+  if (url) {
+    img.src = url;
+    img.style.display = 'block';
+    txt.textContent = 'Preview';
+    img.onerror = () => { img.style.display='none'; txt.textContent='Invalid URL'; };
+  } else {
+    img.style.display = 'none';
+    txt.textContent = 'No image';
+  }
+}
+
+function copySql() {
+  const sql = document.getElementById('sql-code').textContent;
+  navigator.clipboard.writeText(sql).then(() => showToast('SQL copied!', 'success'));
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = (type==='success'?'✅ ':'❌ ') + msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

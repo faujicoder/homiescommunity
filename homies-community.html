@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homies Community — Where Gamers, Coders & Traders Unite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,900;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+
+/* ==================== RESET & BASE ==================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+:root {
+  --black:       #03020a;
+  --deep:        #07051a;
+  --panel:       #0d0b26;
+  --panel2:      #130f35;
+  --border:      rgba(139,92,246,0.18);
+  --border-hot:  rgba(139,92,246,0.55);
+  --violet:      #8b5cf6;
+  --violet-bright:#a78bfa;
+  --indigo:      #6366f1;
+  --cyan:        #22d3ee;
+  --pink:        #f0abfc;
+  --green:       #4ade80;
+  --yellow:      #fbbf24;
+  --red:         #f87171;
+  --text:        #e2deff;
+  --muted:       #9d9dbf;
+  --glow-v:  0 0 20px rgba(139,92,246,0.6), 0 0 60px rgba(139,92,246,0.2);
+  --glow-c:  0 0 20px rgba(34,211,238,0.6), 0 0 60px rgba(34,211,238,0.15);
+  --glow-p:  0 0 20px rgba(240,171,252,0.5);
+}
+
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ==================== CUSTOM CURSOR ==================== */
+#cur-dot, #cur-ring {
+  position: fixed; pointer-events: none; z-index: 9999; border-radius: 50%;
+  transition: opacity .3s;
+}
+#cur-dot {
+  width: 8px; height: 8px;
+  background: var(--cyan);
+  box-shadow: var(--glow-c);
+  transform: translate(-50%,-50%);
+}
+#cur-ring {
+  width: 32px; height: 32px;
+  border: 1.5px solid var(--violet);
+  transform: translate(-50%,-50%);
+  transition: width .2s, height .2s, border-color .2s;
+}
+body:has(a:hover) #cur-ring,
+body:has(button:hover) #cur-ring {
+  width: 48px; height: 48px;
+  border-color: var(--cyan);
+}
+@media (max-width: 768px) { #cur-dot, #cur-ring { display: none; } body { cursor: auto; } }
+
+/* ==================== SCANLINE OVERLAY ==================== */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 9990; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.07) 2px,
+    rgba(0,0,0,0.07) 4px
+  );
+}
+
+/* ==================== SCROLL PROGRESS ==================== */
+#progress {
+  position: fixed; top: 0; left: 0; height: 2px; z-index: 9980;
+  background: linear-gradient(90deg, var(--violet), var(--cyan), var(--pink));
+  width: 0; transition: width .1s;
+  box-shadow: 0 0 12px rgba(139,92,246,0.8);
+}
+
+/* ==================== CANVAS ==================== */
+#bgcanvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+
+/* ==================== NOISE GRAIN ==================== */
+.grain {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px;
+  animation: grain-shift 0.5s steps(1) infinite;
+}
+@keyframes grain-shift {
+  0%   { transform: translate(0,0); }
+  25%  { transform: translate(-2%,-1%); }
+  50%  { transform: translate(1%, 2%); }
+  75%  { transform: translate(-1%, 1%); }
+  100% { transform: translate(2%,-2%); }
+}
+
+/* ==================== NAV ==================== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 clamp(20px, 5vw, 64px);
+  height: 64px;
+  background: rgba(3,2,10,0.7);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, var(--violet-bright), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  text-decoration: none;
+}
+.nav-links {
+  display: flex; gap: 2rem; list-style: none;
+}
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color .2s;
+  position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -4px;
+  width: 0; height: 1px; background: var(--cyan);
+  transition: width .25s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-links a:hover::after { width: 100%; }
+.nav-cta {
+  font-family: 'Exo 2', sans-serif;
+  font-size: .78rem; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: #fff !important; text-decoration: none;
+  padding: 9px 22px; border-radius: 6px;
+  background: linear-gradient(135deg, #5865F2, #7c3aed);
+  border: none; cursor: none;
+  transition: box-shadow .2s, transform .2s;
+}
+.nav-cta:hover { box-shadow: var(--glow-v); transform: translateY(-2px); }
+.nav-cta::after { display: none !important; }
+@media (max-width: 860px) { .nav-links { display: none; } }
+
+/* ==================== SECTION UTILITY ==================== */
+.section { position: relative; z-index: 10; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,5vw,60px); }
+.pad { padding: 110px 0; }
+.pad-sm { padding: 80px 0; }
+
+.tag {
+  display: inline-block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .7rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--cyan);
+  border: 1px solid rgba(34,211,238,.3);
+  padding: 5px 14px; border-radius: 2px;
+  margin-bottom: 18px;
+  background: rgba(34,211,238,.04);
+}
+.heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  line-height: .95;
+  letter-spacing: 1px;
+}
+.subtext {
+  font-size: 1rem; color: var(--muted);
+  line-height: 1.8; max-width: 560px;
+}
+
+/* ==================== REVEAL ==================== */
+.reveal { opacity: 0; transform: translateY(36px); transition: opacity .75s ease, transform .75s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-l { opacity: 0; transform: translateX(-40px); transition: opacity .75s ease, transform .75s ease; }
+.reveal-l.visible { opacity: 1; transform: translateX(0); }
+.reveal-r { opacity: 0; transform: translateX(40px); transition: opacity .75s ease, transform .75s ease; }
+.reveal-r.visible { opacity: 1; transform: translateX(0); }
+
+/* ==================== HERO ==================== */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 100px clamp(20px,5vw,60px) 60px;
+  position: relative; z-index: 10;
+  overflow: hidden;
+}
+
+/* Cyber grid floor */
+.hero-grid {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(139,92,246,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 60%, black 20%, transparent 80%);
+}
+
+/* Glowing orbs */
+.orb {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(80px);
+}
+.orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(109,40,217,.35), transparent 65%); top: -200px; left: -200px; animation: float1 12s ease-in-out infinite; }
+.orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(139,92,246,.18), transparent 65%); bottom: -100px; right: -100px; animation: float2 15s ease-in-out infinite; }
+.orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(240,171,252,.15), transparent 65%); top: 40%; left: 55%; animation: float3 10s ease-in-out infinite; }
+@keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-30px)} }
+@keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,40px)} }
+@keyframes float3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-40px)} }
+
+/* Status badge */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(74,222,128,.07); border: 1px solid rgba(74,222,128,.25);
+  border-radius: 100px; padding: 7px 18px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .72rem; color: var(--green);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 28px;
+  animation: heroFade .8s ease both;
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+/* Hero title with glitch effect */
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.5rem, 9vw, 7.5rem);
+  line-height: 1;
+  letter-spacing: 2px;
+  position: relative;
+  animation: heroFade 1s ease .15s both;
+}
+.hero-title .line-top { display: block; color: var(--text); }
+.hero-title .line-bot {
+  display: block;
+  background: linear-gradient(135deg, var(--violet-bright) 0%, var(--cyan) 50%, var(--pink) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(139,92,246,.6));
+}
+/* Glitch */
+.glitch { position: relative; }
+.glitch::before,.glitch::after {
+  content: attr(data-text);
+  position: absolute; top: 0; left: 0; right: 0;
+  background: linear-gradient(135deg, var(--violet-bright), var(--cyan), var(--pink));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.glitch::before { animation: glitch1 4s infinite; clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); }
+.glitch::after  { animation: glitch2 4s infinite; clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); }
+@keyframes glitch1 {
+  0%,94%,100% { transform: none; opacity: 0; }
+  95% { transform: translate(-3px, 1px) skewX(-2deg); opacity: .7; }
+  97% { transform: translate(3px,-1px) skewX(1deg); opacity: .4; }
+}
+@keyframes glitch2 {
+  0%,91%,100% { transform: none; opacity: 0; }
+  92% { transform: translate(3px, 2px) skewX(2deg); opacity: .6; }
+  94% { transform: translate(-2px,-1px); opacity: .3; }
+}
+
+.hero-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(.9rem, 2vw, 1.1rem);
+  color: var(--muted);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin: 20px 0 44px;
+  animation: heroFade 1s ease .3s both;
+}
+
+.hero-btns {
+  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+  animation: heroFade 1s ease .45s both;
+}
+
+.btn-hero {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: .85rem; font-weight: 800;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  padding: 16px 36px; border-radius: 8px;
+  text-decoration: none; cursor: none;
+  transition: transform .25s, box-shadow .25s;
+  position: relative; overflow: hidden;
+}
+.btn-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255,255,255,.08);
+  transform: translateX(-100%) skewX(-15deg);
+  transition: transform .4s;
+}
+.btn-hero:hover::before { transform: translateX(100%) skewX(-15deg); }
+.btn-discord {
+  background: linear-gradient(135deg, #5865F2 0%, #7c3aed 100%);
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(88,101,242,.4);
+}
+.btn-discord:hover { transform: translateY(-4px); box-shadow: 0 8px 40px rgba(88,101,242,.7); }
+.btn-ghost {
+  background: transparent; color: var(--text);
+  border: 1px solid var(--border-hot);
+}
+.btn-ghost:hover { transform: translateY(-4px); box-shadow: var(--glow-v); border-color: var(--violet); }
+
+/* Hero mini stats */
+.hero-stats {
+  display: flex; gap: 48px; justify-content: center; flex-wrap: wrap;
+  margin-top: 72px;
+  animation: heroFade 1s ease .6s both;
+  position: relative;
+}
+.hero-stats::before {
+  content: ''; position: absolute;
+  top: -28px; left: 50%; transform: translateX(-50%);
+  width: 1px; height: 20px;
+  background: linear-gradient(to bottom, transparent, var(--violet));
+}
+.hstat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem; line-height: 1;
+  background: linear-gradient(135deg, var(--violet-bright), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hstat-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .65rem; letter-spacing: 2px;
+  color: var(--muted); text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Scroll indicator */
+.scroll-hint {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .6rem; letter-spacing: 3px; color: var(--muted);
+  animation: bounce 2s ease-in-out infinite;
+}
+.scroll-hint::after {
+  content: '↓'; font-size: 1rem; color: var(--violet);
+}
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+
+@keyframes heroFade { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+/* ==================== DIVIDER ==================== */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--violet), var(--cyan), transparent);
+  opacity: .25; position: relative; z-index: 10;
+}
+
+/* ==================== ABOUT ==================== */
+#about { background: var(--deep); }
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+@media (max-width: 860px) { .about-grid { grid-template-columns: 1fr; gap: 48px; } }
+
+.about-text .heading { margin-bottom: 20px; }
+.about-text .heading span { color: var(--cyan); }
+
+/* Discord Chat UI */
+.discord-ui {
+  background: #1e1f2e;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6);
+  position: relative;
+}
+.discord-ui::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #5865F2, var(--violet), var(--cyan));
+}
+.dc-topbar {
+  background: #17182a;
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.dc-dots { display: flex; gap: 6px; }
+.dc-dots span {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.dc-dots span:nth-child(1) { background: #ff5f57; }
+.dc-dots span:nth-child(2) { background: #febc2e; }
+.dc-dots span:nth-child(3) { background: #28c840; }
+.dc-chan {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .78rem; color: #72757a;
+  margin-left: 8px;
+}
+.dc-chan strong { color: #dcddde; }
+.dc-online {
+  margin-left: auto;
+  font-size: .68rem; color: #4ade80;
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'Share Tech Mono', monospace;
+}
+.dc-online::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: #4ade80; box-shadow: 0 0 6px #4ade80;
+}
+.dc-body { padding: 16px 0; max-height: 320px; overflow: hidden; }
+.dc-msg {
+  display: flex; gap: 12px;
+  padding: 8px 16px;
+  transition: background .15s;
+}
+.dc-msg:hover { background: rgba(255,255,255,.03); }
+.dc-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 800;
+}
+.dc-right { flex: 1; }
+.dc-name {
+  font-size: .82rem; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 3px;
+}
+.dc-time { font-size: .68rem; color: #4f545c; font-family: 'Share Tech Mono', monospace; }
+.dc-text { font-size: .83rem; color: #dcddde; line-height: 1.5; }
+.dc-badge {
+  font-size: .6rem; padding: 1px 6px; border-radius: 3px;
+  font-weight: 700; letter-spacing: 1px;
+}
+.badge-mod { background: rgba(88,101,242,.3); color: #8b9cf4; }
+.badge-bot { background: rgba(88,101,242,.4); color: #a5b4fc; }
+.dc-footer {
+  padding: 10px 16px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  background: #17182a;
+  display: flex; align-items: center; gap: 10px;
+}
+.dc-input {
+  flex: 1; background: rgba(255,255,255,.05); border: none;
+  border-radius: 8px; padding: 10px 14px;
+  font-size: .82rem; color: #72757a;
+  font-family: 'Exo 2', sans-serif;
+}
+.dc-send {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, #5865F2, var(--violet));
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; cursor: pointer;
+}
+.msg-anim { animation: msgIn .5s ease both; }
+@keyframes msgIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+
+/* ==================== FEATURES ==================== */
+#features { background: var(--panel); }
+.features-header { text-align: center; margin-bottom: 60px; }
+.features-header .subtext { margin: 14px auto 0; text-align: center; }
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.feat-card {
+  background: var(--deep);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 36px 28px;
+  position: relative; overflow: hidden;
+  transition: transform .3s, border-color .3s, box-shadow .3s;
+  cursor: none;
+}
+.feat-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--col), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+.feat-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.feat-card:hover::before { opacity: 1; }
+.feat-card:hover { border-color: rgba(139,92,246,.4); }
+.feat-icon {
+  width: 54px; height: 54px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; margin-bottom: 20px;
+}
+.fi-1 { background: rgba(139,92,246,.12); --col: #8b5cf6; }
+.fi-2 { background: rgba(34,211,238,.1); --col: #22d3ee; }
+.fi-3 { background: rgba(251,191,36,.1); --col: #fbbf24; }
+.fi-4 { background: rgba(74,222,128,.1); --col: #4ade80; }
+.feat-title {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.05rem; font-weight: 800;
+  letter-spacing: .5px; margin-bottom: 10px;
+}
+.feat-desc { font-size: .87rem; color: var(--muted); line-height: 1.75; }
+
+/* ==================== GAMES ==================== */
+#games { background: var(--black); }
+.games-header { text-align: center; margin-bottom: 60px; }
+.games-header .subtext { margin: 14px auto 0; text-align: center; }
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+/* First card (Minecraft) spans full width */
+.games-grid .game-card:nth-child(1) { grid-column: span 3; aspect-ratio: 21/7; }
+/* BGMI spans full width too */
+.games-grid .game-card:nth-child(8) { grid-column: span 3; aspect-ratio: 21/7; }
+
+@media (max-width: 768px) {
+  .games-grid { grid-template-columns: repeat(2, 1fr); }
+  .games-grid .game-card:nth-child(1) { grid-column: span 2; aspect-ratio: 16/8; }
+  .games-grid .game-card:nth-child(8) { grid-column: span 2; aspect-ratio: 16/8; }
+}
+@media (max-width: 480px) {
+  .games-grid { grid-template-columns: 1fr; }
+  .games-grid .game-card:nth-child(1),
+  .games-grid .game-card:nth-child(8) { grid-column: span 1; aspect-ratio: 16/9; }
+}
+
+.game-card {
+  border-radius: 18px; overflow: hidden;
+  position: relative; cursor: none;
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+  aspect-ratio: 16/10;
+}
+.game-card:hover { transform: scale(1.03) translateY(-5px); }
+
+.game-bg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .5s, filter .5s;
+}
+.game-card:hover .game-bg { transform: scale(1.1); filter: brightness(.5); }
+.game-emoji { font-size: clamp(3.5rem, 8vw, 6rem); filter: drop-shadow(0 0 30px currentColor); }
+
+/* Game backgrounds */
+.bg-mc    { background: linear-gradient(145deg, #0f2a0f 0%, #1a4a1a 40%, #0d1f0d 100%); }
+.bg-val   { background: linear-gradient(145deg, #1a0505 0%, #3a0a0a 40%, #1f0505 100%); }
+.bg-ff    { background: linear-gradient(145deg, #1a0a00 0%, #3d1a00 40%, #1f0d00 100%); }
+.bg-bgmi  { background: linear-gradient(145deg, #0a1520 0%, #1a3040 40%, #0f1a25 100%); }
+.bg-cod   { background: linear-gradient(145deg, #0f0f0f 0%, #1a1a1a 40%, #0a0a0a 100%); }
+.bg-gta   { background: linear-gradient(145deg, #0a0a1a 0%, #1a1a3a 40%, #0f0f1f 100%); }
+.bg-roblox{ background: linear-gradient(145deg, #1a0505 0%, #3a0505 40%, #200505 100%); }
+.bg-brawl { background: linear-gradient(145deg, #0a0a20 0%, #141440 40%, #0a0a25 100%); }
+
+.game-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(3,2,10,.96) 0%, rgba(3,2,10,.4) 50%, rgba(3,2,10,.1) 100%);
+}
+.game-content {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: clamp(14px,2.5vw,26px);
+}
+.game-genre {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .62rem; letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 7px; display: inline-block;
+  padding: 3px 10px; border-radius: 3px;
+}
+.gg-mc    { color: #4ade80; border: 1px solid rgba(74,222,128,.3); background: rgba(74,222,128,.07); }
+.gg-val   { color: #f87171; border: 1px solid rgba(248,113,113,.3); background: rgba(248,113,113,.07); }
+.gg-ff    { color: #fb923c; border: 1px solid rgba(251,146,60,.3); background: rgba(251,146,60,.07); }
+.gg-bgmi  { color: #38bdf8; border: 1px solid rgba(56,189,248,.3); background: rgba(56,189,248,.07); }
+.gg-cod   { color: #d4d4d4; border: 1px solid rgba(212,212,212,.3); background: rgba(212,212,212,.07); }
+.gg-gta   { color: #fbbf24; border: 1px solid rgba(251,191,36,.3); background: rgba(251,191,36,.07); }
+.gg-roblox{ color: #f87171; border: 1px solid rgba(248,113,113,.3); background: rgba(248,113,113,.07); }
+.gg-brawl { color: #60a5fa; border: 1px solid rgba(96,165,250,.3); background: rgba(96,165,250,.07); }
+
+.game-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  line-height: 1; margin-bottom: 5px; letter-spacing: 1px;
+}
+.gn-mc    { color: #4ade80; text-shadow: 0 0 20px rgba(74,222,128,.5); }
+.gn-val   { color: #f87171; text-shadow: 0 0 20px rgba(248,113,113,.5); }
+.gn-ff    { color: #fb923c; text-shadow: 0 0 20px rgba(251,146,60,.6); }
+.gn-bgmi  { color: #38bdf8; text-shadow: 0 0 20px rgba(56,189,248,.6); }
+.gn-cod   { color: #e5e5e5; text-shadow: 0 0 20px rgba(212,212,212,.4); }
+.gn-gta   { color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,.5); }
+.gn-roblox{ color: #f87171; text-shadow: 0 0 20px rgba(239,68,68,.6); }
+.gn-brawl { color: #60a5fa; text-shadow: 0 0 20px rgba(96,165,250,.5); }
+
+.game-sub { font-size: .78rem; color: var(--muted); }
+.game-hover-badge {
+  position: absolute; top: 16px; right: 16px;
+  opacity: 0; transform: translateY(-6px);
+  transition: opacity .3s, transform .3s;
+}
+.game-card:hover .game-hover-badge { opacity: 1; transform: translateY(0); }
+.ghb-inner {
+  background: rgba(10,8,30,.75); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px; padding: 7px 13px;
+  font-size: .7rem; font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ==================== STATS / HIGHLIGHTS ==================== */
+#stats { background: var(--deep); }
+.stats-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 60px 40px;
+  position: relative; overflow: hidden;
+}
+.stats-wrap::before {
+  content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--violet), var(--cyan), transparent);
+}
+.stats-wrap::after {
+  content: 'HOMIES';
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(6rem, 18vw, 14rem);
+  letter-spacing: 20px;
+  color: rgba(139,92,246,.025);
+  pointer-events: none; white-space: nowrap;
+}
+.stats-title { text-align: center; margin-bottom: 56px; position: relative; z-index: 1; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0; position: relative; z-index: 1;
+}
+.stat-block {
+  text-align: center; padding: 24px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.stat-block:last-child { border-right: none; }
+@media (max-width: 640px) { .stat-block { border-right: none; border-bottom: 1px solid var(--border); } }
+.stat-block::after {
+  content: '';
+  position: absolute; bottom: 0; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(139,92,246,.2), transparent);
+}
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.8rem,5vw,4rem); line-height: 1;
+  display: block;
+}
+.sn-v { color: var(--violet-bright); text-shadow: var(--glow-v); }
+.sn-c { color: var(--cyan); text-shadow: var(--glow-c); }
+.sn-p { color: var(--pink); text-shadow: var(--glow-p); }
+.sn-g { color: var(--green); text-shadow: 0 0 20px rgba(74,222,128,.5); }
+.stat-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .65rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-top: 8px; display: block;
+}
+
+/* ==================== TESTIMONIALS ==================== */
+#testimonials { background: var(--panel); }
+.testi-header { text-align: center; margin-bottom: 56px; }
+.testi-header .subtext { margin: 14px auto 0; text-align: center; }
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+.tcard {
+  background: var(--deep);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px;
+  position: relative; overflow: hidden;
+  transition: transform .3s, border-color .3s;
+  cursor: none;
+}
+.tcard:hover { transform: translateY(-6px); border-color: var(--border-hot); }
+.tcard::before {
+  content: '"';
+  position: absolute; top: -4px; right: 18px;
+  font-size: 5rem; font-family: Georgia, serif;
+  color: rgba(139,92,246,.07); line-height: 1;
+  pointer-events: none;
+}
+.tcard-top {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.tcard-av {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .9rem; flex-shrink: 0;
+}
+.tcard-name { font-weight: 800; font-size: .88rem; }
+.tcard-role { font-size: .72rem; color: var(--violet-bright); font-family: 'Share Tech Mono', monospace; margin-top: 2px; }
+.tcard-text { font-size: .86rem; color: var(--muted); line-height: 1.8; }
+.tcard-emoji { margin-top: 14px; font-size: 1.1rem; }
+.stars { color: var(--yellow); font-size: .75rem; letter-spacing: 2px; margin-top: 14px; }
+
+/* ==================== HOMIES TEAM ==================== */
+#team { background: var(--black); }
+
+/* Loading spinner */
+.team-loading {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 80px 0;
+}
+.tl-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid rgba(139,92,246,.2);
+  border-top-color: var(--violet-bright);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Category block */
+.team-category { width: 100%; margin-bottom: 56px; }
+.team-category:last-child { margin-bottom: 0; }
+
+/* Category header row */
+.cat-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 28px; position: relative;
+}
+.cat-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .7rem; letter-spacing: 3px; text-transform: uppercase;
+  padding: 7px 18px; border-radius: 3px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.cat-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--cat-color, #8b5cf6), transparent);
+  opacity: .3;
+}
+/* connector dot between categories */
+.cat-connector {
+  display: flex; flex-direction: column; align-items: center;
+  margin: -16px auto 16px; gap: 0;
+}
+.cat-conn-line { width: 1px; height: 24px; background: linear-gradient(to bottom, rgba(139,92,246,.4), rgba(167,139,250,.2)); }
+.cat-conn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet-bright); box-shadow: 0 0 8px var(--violet); }
+
+/* Cards grid */
+.team-grid {
+  display: flex; flex-wrap: wrap; gap: 18px;
+  justify-content: center;
+}
+
+/* Member card */
+.m-card {
+  background: var(--panel);
+  border-radius: 16px; padding: 28px 22px;
+  text-align: center;
+  position: relative; overflow: hidden;
+  width: 200px; flex-shrink: 0;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s, border-color .3s;
+  cursor: none;
+  border: 1px solid var(--card-border, rgba(139,92,246,.15));
+}
+.m-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--card-accent, #8b5cf6), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+.m-card:hover { transform: translateY(-10px); box-shadow: var(--card-shadow, 0 20px 50px rgba(139,92,246,.12)); }
+.m-card:hover { border-color: var(--card-border-hot, rgba(139,92,246,.4)); }
+.m-card:hover::before { opacity: 1; }
+
+/* Avatar */
+.m-av-wrap { position: relative; display: inline-block; margin-bottom: 14px; }
+.m-av-img {
+  width: 74px; height: 74px; border-radius: 50%;
+  object-fit: cover; display: block; position: relative; z-index: 1;
+}
+.m-av-fallback {
+  width: 74px; height: 74px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
+  position: relative; z-index: 1;
+}
+.m-av-ring {
+  position: absolute; inset: -3px; border-radius: 50%;
+  animation: ring-spin 5s linear infinite;
+}
+@keyframes ring-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.m-badge-icon {
+  position: absolute; top: -1px; right: -1px;
+  font-size: .9rem; z-index: 2;
+}
+
+/* Card text */
+.m-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem; letter-spacing: 1.5px;
+  margin-bottom: 4px; line-height: 1;
+}
+.m-role {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .6rem; letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 14px; opacity: .7;
+}
+.m-ig {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .72rem; font-weight: 600;
+  text-decoration: none; padding: 5px 12px;
+  border-radius: 100px; transition: opacity .2s, transform .2s;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--text);
+}
+.m-ig:hover { opacity: .85; transform: scale(1.05); }
+.m-ig-icon { font-size: .85rem; }
+
+/* ==================== JOIN ==================== */
+#join { background: var(--deep); }
+.join-box {
+  background: var(--panel);
+  border: 1px solid rgba(139,92,246,.3);
+  border-radius: 24px; padding: clamp(48px,8vw,96px) clamp(24px,6vw,80px);
+  text-align: center; position: relative; overflow: hidden;
+}
+.join-box::before {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--violet), var(--cyan), transparent);
+}
+.join-orb {
+  position: absolute; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(109,40,217,.2), transparent 65%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  filter: blur(60px); pointer-events: none;
+}
+.join-fire { font-size: 3rem; display: block; margin-bottom: 16px; animation: fireWig 2s ease-in-out infinite; }
+@keyframes fireWig { 0%,100%{transform:rotate(-5deg) scale(1)} 50%{transform:rotate(5deg) scale(1.1)} }
+.join-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem,6vw,4.5rem); line-height: 1.05;
+  margin-bottom: 16px; position: relative;
+}
+.join-title span { color: var(--violet-bright); }
+.join-sub {
+  font-size: 1rem; color: var(--muted);
+  max-width: 480px; margin: 0 auto 44px;
+  line-height: 1.8; position: relative;
+}
+.join-sub strong { color: var(--cyan); }
+.join-cta { position: relative; }
+.btn-big-discord {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1rem; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 20px 52px; border-radius: 12px;
+  background: #5865F2; color: #fff;
+  text-decoration: none; cursor: none;
+  position: relative; overflow: hidden;
+  transition: transform .25s, box-shadow .25s;
+  box-shadow: 0 8px 32px rgba(88,101,242,.4);
+}
+.btn-big-discord::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.12), transparent);
+}
+.btn-big-discord:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 16px 60px rgba(88,101,242,.65); }
+.btn-icon { font-size: 1.4rem; }
+.join-urgency {
+  margin-top: 24px; font-size: .88rem; color: var(--muted);
+  font-family: 'Share Tech Mono', monospace;
+}
+.join-urgency span { color: var(--violet-bright); }
+.join-members {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-top: 36px; flex-wrap: wrap;
+}
+.mini-avs { display: flex; }
+.mini-av {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--panel);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 800;
+  margin-left: -8px;
+}
+.mini-av:first-child { margin-left: 0; }
+.join-count-txt { font-size: .82rem; color: var(--muted); }
+.join-count-txt strong { color: var(--text); }
+
+/* ==================== FOOTER ==================== */
+footer {
+  position: relative; z-index: 10;
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  padding: 48px 0 28px;
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 28px; margin-bottom: 32px;
+}
+.footer-logo-wrap { text-decoration: none; }
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 4px;
+  background: linear-gradient(90deg, var(--violet-bright), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.footer-tagline { font-size: .72rem; color: var(--muted); letter-spacing: 1px; margin-top: 4px; font-family: 'Share Tech Mono', monospace; }
+.footer-nav { display: flex; gap: 28px; list-style: none; flex-wrap: wrap; }
+.footer-nav a { color: var(--muted); text-decoration: none; font-size: .83rem; transition: color .2s; }
+.footer-nav a:hover { color: var(--violet-bright); }
+.footer-disc {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(88,101,242,.12); border: 1px solid rgba(88,101,242,.3);
+  color: #8b9cf4; text-decoration: none;
+  font-size: .8rem; font-weight: 700; letter-spacing: 1px;
+  padding: 10px 20px; border-radius: 8px;
+  transition: background .2s, box-shadow .2s;
+}
+.footer-disc:hover { background: rgba(88,101,242,.22); box-shadow: 0 0 24px rgba(88,101,242,.3); }
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  padding-top: 24px; border-top: 1px solid rgba(255,255,255,.05);
+}
+.footer-copy { font-size: .75rem; color: var(--muted); font-family: 'Share Tech Mono', monospace; }
+.footer-copy a { color: var(--violet-bright); text-decoration: none; }
+.social-links { display: flex; gap: 12px; }
+.slink {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; text-decoration: none;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.slink:hover { border-color: var(--violet); box-shadow: var(--glow-v); transform: translateY(-2px); }
+
+/* ==================== SOUND TOGGLE ==================== */
+#soundBtn {
+  position: fixed; bottom: 24px; right: 24px; z-index: 900;
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--panel2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: none;
+  backdrop-filter: blur(12px);
+  transition: border-color .2s, box-shadow .2s;
+}
+#soundBtn:hover { border-color: var(--violet); box-shadow: var(--glow-v); }
+#soundBtn.on { border-color: var(--cyan); box-shadow: var(--glow-c); }
+
+/* ==================== BACK TO TOP ==================== */
+#topBtn {
+  position: fixed; bottom: 24px; left: 24px; z-index: 900;
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--panel2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: none; text-decoration: none;
+  backdrop-filter: blur(12px);
+  transition: border-color .2s, box-shadow .2s, opacity .3s;
+  opacity: 0; pointer-events: none;
+}
+#topBtn.show { opacity: 1; pointer-events: all; }
+#topBtn:hover { border-color: var(--cyan); box-shadow: var(--glow-c); }
+
+/* ==================== RESPONSIVE TWEAKS ==================== */
+@media (max-width: 640px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .hero-stats { gap: 28px; }
+  .stats-wrap { padding: 40px 20px; }
+  .join-box { padding: 48px 24px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+
+<!-- Scroll progress -->
+<div id="progress"></div>
+
+<!-- Noise grain -->
+<div class="grain"></div>
+
+<!-- Particle canvas -->
+<canvas id="bgcanvas"></canvas>
+
+<!-- Sound toggle -->
+<button id="soundBtn" title="Toggle ambient sound">🔇</button>
+
+<!-- Back to top -->
+<a href="#hero" id="topBtn">↑</a>
+
+<!-- ======================== NAV ======================== -->
+<nav>
+  <a href="#hero" class="nav-logo">HOMIES</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#games">Games</a></li>
+    <li><a href="#stats">Stats</a></li>
+    <li><a href="#testimonials">Community</a></li>
+    <li><a href="#team">Team</a></li>
+  </ul>
+  <a href="https://discord.gg/homies" target="_blank" rel="noopener" class="nav-cta">Join Discord</a>
+</nav>
+
+<!-- ======================== HERO ======================== -->
+<section id="hero" class="section">
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="status-badge">
+    <span class="status-dot"></span>
+    1,500+ members • server is live
+  </div>
+
+  <h1 class="hero-title">
+    <span class="line-top">Welcome to</span>
+    <span class="line-bot glitch" data-text="Homies Community">Homies Community</span>
+  </h1>
+
+  <p class="hero-sub">Where Gamers, Coders &amp; Traders Unite</p>
+
+  <div class="hero-btns">
+    <a href="https://discord.gg/homies" target="_blank" rel="noopener" class="btn-hero btn-discord">
+      <span>💬</span> Join Our Discord
+    </a>
+    <a href="#about" class="btn-hero btn-ghost">
+      <span>⚡</span> Explore
+    </a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-val">10,000+</div>
+      <div class="hstat-lbl">Total Members</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">1,000+</div>
+      <div class="hstat-lbl">Active Gamers</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">500+</div>
+      <div class="hstat-lbl">VC Sessions</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">100%</div>
+      <div class="hstat-lbl">Free to Join</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">SCROLL</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ======================== ABOUT ======================== -->
+<section id="about" class="section pad">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text reveal-l">
+        <span class="tag">// About Us</span>
+        <h2 class="heading">More Than Just a <span>Server.</span></h2>
+        <p class="subtext" style="margin: 20px 0 20px">
+          Homies Community is where strangers become squadmates and squadmates become lifelong friends.
+          We built this place for people who grind hard, play harder, and never stop learning.
+        </p>
+        <p class="subtext">
+          Whether you're dropping into Valorant, surviving in Minecraft, running GTA heists, 
+          or learning to code at 2am — you're never alone here. The chat is always live, 
+          the VC is always popping, and the vibes? Unmatched. 🔥
+        </p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:36px;">
+          <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:16px 22px;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--violet-bright)">24/7</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--muted);margin-top:3px">ACTIVE CHAT</div>
+          </div>
+          <div style="background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.2);border-radius:10px;padding:16px 22px;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--cyan)">FREE</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--muted);margin-top:3px">LEARNING</div>
+          </div>
+          <div style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:16px 22px;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--green)">∞</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--muted);margin-top:3px">GOOD VIBES</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-r">
+        <div class="discord-ui">
+          <div class="dc-topbar">
+            <div class="dc-dots"><span></span><span></span><span></span></div>
+            <div class="dc-chan"># <strong>general-vibes</strong></div>
+            <div class="dc-online">892 online</div>
+          </div>
+          <div class="dc-body" id="dcBody">
+            <div class="dc-msg msg-anim" style="animation-delay:.3s">
+              <div class="dc-av" style="background:linear-gradient(135deg,#7c3aed,#3b82f6)">XZ</div>
+              <div class="dc-right">
+                <div class="dc-name">xZephyr <span class="dc-badge badge-mod">MOD</span><span class="dc-time">Today at 11:42</span></div>
+                <div class="dc-text">Val session in 10 mins!! who's in?? 🎯🔥</div>
+              </div>
+            </div>
+            <div class="dc-msg msg-anim" style="animation-delay:.6s">
+              <div class="dc-av" style="background:linear-gradient(135deg,#10b981,#06b6d4)">NK</div>
+              <div class="dc-right">
+                <div class="dc-name">n1kz <span class="dc-time">Today at 11:43</span></div>
+                <div class="dc-text">IM IN 🙋‍♂️ just finished that Python bot from yesterday's learning VC btw 🧠✅</div>
+              </div>
+            </div>
+            <div class="dc-msg msg-anim" style="animation-delay:.9s">
+              <div class="dc-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">TK</div>
+              <div class="dc-right">
+                <div class="dc-name">TradeKing <span class="dc-time">Today at 11:44</span></div>
+                <div class="dc-text">caught a sick setup on BTC 📈 sharing the chart in #trading after game</div>
+              </div>
+            </div>
+            <div class="dc-msg msg-anim" style="animation-delay:1.2s">
+              <div class="dc-av" style="background:linear-gradient(135deg,#ec4899,#a855f7)">SM</div>
+              <div class="dc-right">
+                <div class="dc-name">SkyMC <span class="dc-time">Today at 11:45</span></div>
+                <div class="dc-text">anyone building on the SMP rn? I found diamonds at -382 64 🤫⛏️</div>
+              </div>
+            </div>
+            <div class="dc-msg msg-anim" style="animation-delay:1.5s">
+              <div class="dc-av" style="background:linear-gradient(135deg,#6366f1,#06b6d4)">GH</div>
+              <div class="dc-right">
+                <div class="dc-name">gh0stBrawl <span class="dc-badge badge-mod">MOD</span><span class="dc-time">Today at 11:46</span></div>
+                <div class="dc-text">Brawlhalla tourney this weekend 🏆 brackets dropping tomorrow — stay locked!</div>
+              </div>
+            </div>
+          </div>
+          <div class="dc-footer">
+            <div class="dc-input">Message #general-vibes</div>
+            <div class="dc-send">➤</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ======================== FEATURES ======================== -->
+<section id="features" class="section pad">
+  <div class="container">
+    <div class="features-header reveal">
+      <span class="tag">// What We Offer</span>
+      <h2 class="heading">Built for the <span style="color:var(--cyan)">Culture</span></h2>
+      <p class="subtext">Every feature built with the community in mind — no gatekeeping, all vibes.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card reveal" style="--col:#8b5cf6;transition-delay:.05s">
+        <div class="feat-icon fi-1">🎮</div>
+        <div class="feat-title">Daily Gaming VC Sessions</div>
+        <div class="feat-desc">No more solo queue sadness. We host organized gaming sessions every single day — voice chat always full, energy always high.</div>
+      </div>
+      <div class="feat-card reveal" style="--col:#22d3ee;transition-delay:.12s">
+        <div class="feat-icon fi-2">💬</div>
+        <div class="feat-title">Active & Friendly Chat</div>
+        <div class="feat-desc">Thousands of messages daily. Real connections, genuine friendships, zero toxicity. Our members actually look out for each other.</div>
+      </div>
+      <div class="feat-card reveal" style="--col:#fbbf24;transition-delay:.19s">
+        <div class="feat-icon fi-3">🧠</div>
+        <div class="feat-title">Free Programming & Trading</div>
+        <div class="feat-desc">Learn to code or trade from experienced members — absolutely free. No paywalls, no gatekeeping. Just raw knowledge, openly shared.</div>
+      </div>
+      <div class="feat-card reveal" style="--col:#4ade80;transition-delay:.26s">
+        <div class="feat-icon fi-4">🌍</div>
+        <div class="feat-title">10,000+ Strong Community</div>
+        <div class="feat-desc">A massive, diverse global crew of 10,000+ members and 1,000+ active gamers. Different timezones just mean someone's always there with you — midnight grind or morning games.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ======================== GAMES ======================== -->
+<section id="games" class="section pad">
+  <div class="container">
+    <div class="games-header reveal">
+      <span class="tag">// Games We Play</span>
+      <h2 class="heading">The Battlefield <span style="color:var(--violet-bright)">Lineup</span></h2>
+      <p class="subtext">From pixelated paradise to tactical firefights — we run it all, together.</p>
+    </div>
+    <div class="games-grid">
+
+      <!-- Minecraft - featured large top -->
+      <div class="game-card reveal" style="transition-delay:.05s">
+        <div class="game-bg bg-mc"><span class="game-emoji">⛏️</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-mc">Sandbox / Survival</span>
+          <div class="game-name gn-mc">Minecraft</div>
+          <div class="game-sub">Community SMP · Builds · Survival · Redstone</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#4ade80">🟢 Always Active</div></div>
+      </div>
+
+      <!-- Valorant -->
+      <div class="game-card reveal" style="transition-delay:.08s">
+        <div class="game-bg bg-val"><span class="game-emoji">🎯</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-val">Tactical FPS</span>
+          <div class="game-name gn-val">Valorant</div>
+          <div class="game-sub">Ranked Grind · Custom Games · VOD Review</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#f87171">🔥 Most Played</div></div>
+      </div>
+
+      <!-- Free Fire -->
+      <div class="game-card reveal" style="transition-delay:.11s">
+        <div class="game-bg bg-ff"><span class="game-emoji">🔥</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-ff">Battle Royale</span>
+          <div class="game-name gn-ff">Free Fire</div>
+          <div class="game-sub">Squad Drops · Ranked Push · Clash Squad</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#fb923c">💥 Hot Picks</div></div>
+      </div>
+
+      <!-- BGMI -->
+      <div class="game-card reveal" style="transition-delay:.14s">
+        <div class="game-bg bg-bgmi"><span class="game-emoji">🪖</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-bgmi">Battle Royale</span>
+          <div class="game-name gn-bgmi">BGMI</div>
+          <div class="game-sub">Squad Drops · Ranked Push · Classic Mode</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#38bdf8">🔫 Desi Squad</div></div>
+      </div>
+
+      <!-- Call of Duty -->
+      <div class="game-card reveal" style="transition-delay:.17s">
+        <div class="game-bg bg-cod"><span class="game-emoji">🪖</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-cod">FPS / Battle Royale</span>
+          <div class="game-name gn-cod">Call of Duty</div>
+          <div class="game-sub">Warzone · MP · Ranked · Camo Grind</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#a3a3a3">🎖️ Squad Up</div></div>
+      </div>
+
+      <!-- GTA V -->
+      <div class="game-card reveal" style="transition-delay:.20s">
+        <div class="game-bg bg-gta"><span class="game-emoji">🚗</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-gta">Open World</span>
+          <div class="game-name gn-gta">GTA V</div>
+          <div class="game-sub">Heists · Free Roam · Chaos Sessions</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#fbbf24">💰 Weekly Heists</div></div>
+      </div>
+
+      <!-- Roblox -->
+      <div class="game-card reveal" style="transition-delay:.23s">
+        <div class="game-bg bg-roblox"><span class="game-emoji">🟥</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-roblox">Platform / Metaverse</span>
+          <div class="game-name gn-roblox">Roblox</div>
+          <div class="game-sub">Games · Roleplay · Obby · Trading</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#ef4444">🎮 Chill Zone</div></div>
+      </div>
+
+      <!-- Brawlhalla - featured large bottom -->
+      <div class="game-card reveal" style="transition-delay:.26s">
+        <div class="game-bg bg-brawl"><span class="game-emoji">⚔️</span></div>
+        <div class="game-overlay"></div>
+        <div class="game-content">
+          <span class="game-genre gg-brawl">Platform Fighter</span>
+          <div class="game-name gn-brawl">Brawlhalla</div>
+          <div class="game-sub">Tournaments · Ranked · Casual Lobbies</div>
+        </div>
+        <div class="game-hover-badge"><div class="ghb-inner" style="color:#60a5fa">🏆 Tournaments</div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ======================== STATS ======================== -->
+<section id="stats" class="section pad-sm">
+  <div class="container">
+    <div class="reveal">
+      <div class="stats-wrap">
+        <div class="stats-title">
+          <span class="tag">// Community Highlights</span>
+          <h2 class="heading">The Numbers <span style="color:var(--cyan)">Don't Lie</span></h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-block">
+            <span class="stat-num sn-v" data-count="10000">0</span>
+            <span class="stat-label">Total Members</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-num sn-c" data-count="1000">0</span>
+            <span class="stat-label">Active Gamers</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-num sn-p" data-count="500">0</span>
+            <span class="stat-label">VC Sessions</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-num sn-g" data-count="100">0</span>
+            <span class="stat-label">% Free to Join</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ======================== TESTIMONIALS ======================== -->
+<section id="testimonials" class="section pad">
+  <div class="container">
+    <div class="testi-header reveal">
+      <span class="tag">// Community Love</span>
+      <h2 class="heading">Straight from the <span style="color:var(--violet-bright)">Homies</span></h2>
+      <p class="subtext">Real words from real members — the vibe speaks for itself.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="tcard reveal" style="transition-delay:.05s">
+        <div class="tcard-top">
+          <div class="tcard-av" style="background:linear-gradient(135deg,#7c3aed,#3b82f6)">RX</div>
+          <div>
+            <div class="tcard-name">r3ktX_gaming</div>
+            <div class="tcard-role">Valorant Main · Diamond</div>
+          </div>
+        </div>
+        <div class="tcard-text">This community genuinely improved my game sense. The daily VC sessions are actually organized — we analyze plays, share setups, and help each other climb. Best Discord I've been in.</div>
+        <div class="stars">★★★★★</div>
+        <div class="tcard-emoji">🎯🔥</div>
+      </div>
+      <div class="tcard reveal" style="transition-delay:.1s">
+        <div class="tcard-top">
+          <div class="tcard-av" style="background:linear-gradient(135deg,#10b981,#06b6d4)">NK</div>
+          <div>
+            <div class="tcard-name">n1kzito_dev</div>
+            <div class="tcard-role">Coder in Progress</div>
+          </div>
+        </div>
+        <div class="tcard-text">Joined knowing zero code. Three months later I built my first full-stack project thanks to the free programming sessions. The mentors here are genuinely GOATED — no gatekeeping ever.</div>
+        <div class="stars">★★★★★</div>
+        <div class="tcard-emoji">💻✨</div>
+      </div>
+      <div class="tcard reveal" style="transition-delay:.15s">
+        <div class="tcard-top">
+          <div class="tcard-av" style="background:linear-gradient(135deg,#f59e0b,#d97706)">TK</div>
+          <div>
+            <div class="tcard-name">TradeKing99</div>
+            <div class="tcard-role">Crypto & Stocks Trader</div>
+          </div>
+        </div>
+        <div class="tcard-text">Been in a lot of trading communities — this one actually shares REAL setups and strategies without hiding behind a subscription wall. Pure generosity from smart people. 📈</div>
+        <div class="stars">★★★★★</div>
+        <div class="tcard-emoji">📈💰</div>
+      </div>
+      <div class="tcard reveal" style="transition-delay:.2s">
+        <div class="tcard-top">
+          <div class="tcard-av" style="background:linear-gradient(135deg,#ec4899,#be185d)">SK</div>
+          <div>
+            <div class="tcard-name">SkyBlock_K</div>
+            <div class="tcard-role">Minecraft Builder</div>
+          </div>
+        </div>
+        <div class="tcard-text">The SMP is legendary. Everyone actually contributes, the builds are insane, and the community is wholesome af. Also found my best friend here and we've been playing daily for 8 months. ⛏️</div>
+        <div class="stars">★★★★★</div>
+        <div class="tcard-emoji">⛏️🏗️</div>
+      </div>
+      <div class="tcard reveal" style="transition-delay:.25s">
+        <div class="tcard-top">
+          <div class="tcard-av" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">GH</div>
+          <div>
+            <div class="tcard-name">gh0stBrawl</div>
+            <div class="tcard-role">Brawlhalla Competitor</div>
+          </div>
+        </div>
+        <div class="tcard-text">Homies runs the most fun Brawlhalla tournaments I've competed in. Good competition, genuine hype, and everyone stays respectful win or lose. This is what gaming communities should be.</div>
+        <div class="stars">★★★★★</div>
+        <div class="tcard-emoji">⚔️🏆</div>
+      </div>
+      <div class="tcard reveal" style="transition-delay:.3s">
+        <div class="tcard-top">
+          <div class="tcard-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed)">GZ</div>
+          <div>
+            <div class="tcard-name">GlitchZero</div>
+            <div class="tcard-role">GTA V Grinder</div>
+          </div>
+        </div>
+        <div class="tcard-text">GTA heist sessions with the Homies never get old. Full crew, perfect coordination, maximum chaos. The energy in VC is something else. Joined in 2 mins and never looked back. 🚗💸</div>
+        <div class="stars">★★★★★</div>
+        <div class="tcard-emoji">🚗💸</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ======================== HOMIES TEAM ======================== -->
+<section id="team" class="section pad">
+  <div class="container">
+    <div class="team-header reveal" style="text-align:center;margin-bottom:70px">
+      <span class="tag">// Homies Team</span>
+      <h2 class="heading">The People Behind <span style="color:var(--violet-bright)">Homies</span></h2>
+      <p class="subtext" style="margin:14px auto 0;text-align:center">The real ones keeping this community alive, growing, and always poppin'. 🔥</p>
+    </div>
+
+    <!-- Team rendered by JS from Supabase -->
+    <div id="team-container">
+      <!-- Loading skeleton -->
+      <div class="team-loading">
+        <div class="tl-spinner"></div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.75rem;letter-spacing:2px;color:var(--muted);margin-top:16px">LOADING TEAM...</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ======================== JOIN ======================== -->
+<section id="join" class="section pad">
+  <div class="container">
+    <div class="join-box reveal">
+      <div class="join-orb"></div>
+      <span class="join-fire">🔥</span>
+      <h2 class="join-title">Join the Homies <span>Today!</span></h2>
+      <p class="join-sub">
+        Don't miss out on the vibe — <strong>1,500+ members</strong> are already having the time of their lives. Gaming, learning, and building real friendships daily.
+      </p>
+      <div class="join-cta">
+        <a href="https://discord.gg/homies" target="_blank" rel="noopener" class="btn-big-discord">
+          <span class="btn-icon">💬</span>
+          Join Discord Server
+        </a>
+      </div>
+      <p class="join-urgency">
+        It's free. It's live. Your future squad is waiting. <span>discord.gg/homies</span>
+      </p>
+      <div class="join-members">
+        <div class="mini-avs">
+          <div class="mini-av" style="background:linear-gradient(135deg,#7c3aed,#3b82f6)">X</div>
+          <div class="mini-av" style="background:linear-gradient(135deg,#10b981,#06b6d4)">N</div>
+          <div class="mini-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">T</div>
+          <div class="mini-av" style="background:linear-gradient(135deg,#ec4899,#a855f7)">S</div>
+          <div class="mini-av" style="background:linear-gradient(135deg,#06b6d4,#3b82f6)">G</div>
+          <div class="mini-av" style="background:linear-gradient(135deg,#a855f7,#6366f1)">+</div>
+        </div>
+        <div class="join-count-txt"><strong>1,500+ members</strong> already inside — join them now.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== FOOTER ======================== -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <a href="#hero" class="footer-logo-wrap" style="text-decoration:none">
+        <div class="footer-logo">HOMIES COMMUNITY</div>
+        <div class="footer-tagline">Where Gamers, Coders & Traders Unite</div>
+      </a>
+      <ul class="footer-nav">
+        <li><a href="#about">About</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#games">Games</a></li>
+        <li><a href="#stats">Stats</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#join">Join</a></li>
+      </ul>
+      <a href="https://discord.gg/homies" target="_blank" rel="noopener" class="footer-disc">
+        💬 discord.gg/homies
+      </a>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">
+        © 2025 Homies Community · Made with ❤️ for the culture ·
+        <a href="https://discord.gg/homies" target="_blank">discord.gg/homies</a>
+      </div>
+      <div class="social-links">
+        <a href="https://discord.gg/homies" target="_blank" class="slink" title="Discord">💬</a>
+        <a href="#" class="slink" title="Twitter/X">𝕏</a>
+        <a href="#" class="slink" title="YouTube">▶</a>
+        <a href="#" class="slink" title="Instagram">📸</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ======================== CURSOR ======================== */
+const dot = document.getElementById('cur-dot');
+const ring = document.getElementById('cur-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+});
+(function lerp() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(lerp);
+})();
+
+/* ======================== PARTICLES ======================== */
+const canvas = document.getElementById('bgcanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+const COLORS = ['rgba(139,92,246,', 'rgba(167,139,250,', 'rgba(240,171,252,', 'rgba(99,102,241,'];
+let particles = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); initParticles(); });
+
+class Particle {
+  constructor() { this.init(); }
+  init() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = Math.random() * 1.5 + 0.3;
+    this.col = COLORS[Math.floor(Math.random() * COLORS.length)];
+    this.a = Math.random() * 0.4 + 0.05;
+    this.vx = (Math.random() - 0.5) * 0.25;
+    this.vy = (Math.random() - 0.5) * 0.25 - 0.05;
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.y < -10 || this.x < -10 || this.x > W + 10) this.init();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = this.col + this.a + ')';
+    ctx.fill();
+  }
+}
+
+function initParticles() {
+  particles = [];
+  const n = Math.min(180, Math.floor(W * H / 8000));
+  for (let i = 0; i < n; i++) particles.push(new Particle());
+}
+initParticles();
+
+function drawLines() {
+  const maxDist = 130;
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < maxDist) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = 'rgba(139,92,246,' + (0.06 * (1 - d / maxDist)) + ')';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+(function animate() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawLines();
+  requestAnimationFrame(animate);
+})();
+
+/* ======================== SCROLL REVEAL ======================== */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal, .reveal-l, .reveal-r').forEach(el => obs.observe(el));
+
+/* ======================== COUNTER ANIMATION ======================== */
+function animCount(el, target) {
+  const dur = 2200;
+  let start;
+  const suffix = el.dataset.count == '100' ? '%' : '+';
+  const step = ts => {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.floor(ease * target).toLocaleString() + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+const countObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      animCount(e.target, parseInt(e.target.dataset.count));
+      countObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.4 });
+document.querySelectorAll('[data-count]').forEach(el => countObs.observe(el));
+
+/* ======================== SCROLL PROGRESS ======================== */
+const bar = document.getElementById('progress');
+const topBtn = document.getElementById('topBtn');
+window.addEventListener('scroll', () => {
+  const max = document.body.scrollHeight - window.innerHeight;
+  bar.style.width = (window.scrollY / max * 100) + '%';
+  topBtn.classList.toggle('show', window.scrollY > 400);
+});
+
+/* ======================== SOUND TOGGLE ======================== */
+const soundBtn = document.getElementById('soundBtn');
+let ac = null, masterGain = null, soundOn = false;
+
+soundBtn.addEventListener('click', () => {
+  if (!soundOn) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = ac.createGain();
+    masterGain.gain.setValueAtTime(0, ac.currentTime);
+    masterGain.gain.linearRampToValueAtTime(0.06, ac.currentTime + 1.5);
+    masterGain.connect(ac.destination);
+
+    // Sub bass hum
+    const o1 = ac.createOscillator();
+    o1.type = 'sine'; o1.frequency.value = 55;
+    o1.connect(masterGain); o1.start();
+
+    // Mid tone
+    const o2 = ac.createOscillator();
+    o2.type = 'triangle'; o2.frequency.value = 110;
+    const g2 = ac.createGain(); g2.gain.value = 0.3;
+    o2.connect(g2); g2.connect(masterGain); o2.start();
+
+    // High shimmer
+    const o3 = ac.createOscillator();
+    o3.type = 'sine'; o3.frequency.value = 440;
+    const g3 = ac.createGain(); g3.gain.value = 0.05;
+    o3.connect(g3); g3.connect(masterGain); o3.start();
+
+    // LFO wobble on bass
+    const lfo = ac.createOscillator();
+    lfo.frequency.value = 0.12;
+    const lfoGain = ac.createGain(); lfoGain.gain.value = 4;
+    lfo.connect(lfoGain); lfoGain.connect(o1.frequency); lfo.start();
+
+    soundOn = true;
+    soundBtn.textContent = '🔊';
+    soundBtn.classList.add('on');
+  } else {
+    masterGain.gain.linearRampToValueAtTime(0, ac.currentTime + 0.8);
+    setTimeout(() => { ac.close(); soundOn = false; }, 900);
+    soundBtn.textContent = '🔇';
+    soundBtn.classList.remove('on');
+  }
+});
+
+/* ======================== PARALLAX ORBS ======================== */
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  document.querySelectorAll('.orb').forEach((orb, i) => {
+    const speed = [0.08, 0.05, 0.12][i] || 0.06;
+    orb.style.transform = `translateY(${y * speed}px)`;
+  });
+});
+
+/* ======================== HOMIES TEAM — SUPABASE ======================== */
+// ⚙️ REPLACE these with your actual Supabase project values:
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+const SUPABASE_KEY = 'YOUR_ANON_PUBLIC_KEY';
+
+// Category config — order, label, emoji, colors
+const CATEGORIES = [
+  {
+    role: 'founder',
+    label: 'Founder',
+    emoji: '🌟',
+    color: '#f97316',
+    border: 'rgba(249,115,22,.25)',
+    borderHot: 'rgba(249,115,22,.6)',
+    shadow: '0 20px 50px rgba(249,115,22,.12)',
+    ring: 'conic-gradient(rgba(249,115,22,.7), rgba(251,191,36,.4), rgba(249,115,22,.7))',
+    nameColor: '#fb923c',
+    nameShadow: 'rgba(249,115,22,.4)',
+    avBg: 'linear-gradient(135deg,#7c2d12,#f97316)',
+  },
+  {
+    role: 'owner',
+    label: 'Owner',
+    emoji: '👑',
+    color: '#fbbf24',
+    border: 'rgba(251,191,36,.25)',
+    borderHot: 'rgba(251,191,36,.65)',
+    shadow: '0 20px 50px rgba(251,191,36,.12)',
+    ring: 'conic-gradient(rgba(251,191,36,.7), rgba(240,171,252,.3), rgba(251,191,36,.7))',
+    nameColor: '#fde68a',
+    nameShadow: 'rgba(251,191,36,.4)',
+    avBg: 'linear-gradient(135deg,#92400e,#fbbf24)',
+  },
+  {
+    role: 'coowner',
+    label: 'Co-Owner',
+    emoji: '⚡',
+    color: '#a78bfa',
+    border: 'rgba(167,139,250,.2)',
+    borderHot: 'rgba(167,139,250,.6)',
+    shadow: '0 20px 50px rgba(139,92,246,.12)',
+    ring: 'conic-gradient(rgba(139,92,246,.7), rgba(167,139,250,.4), rgba(139,92,246,.7))',
+    nameColor: '#c4b5fd',
+    nameShadow: 'rgba(167,139,250,.4)',
+    avBg: 'linear-gradient(135deg,#3730a3,#a78bfa)',
+  },
+  {
+    role: 'management',
+    label: 'Management',
+    emoji: '🛡️',
+    color: '#34d399',
+    border: 'rgba(52,211,153,.2)',
+    borderHot: 'rgba(52,211,153,.55)',
+    shadow: '0 20px 50px rgba(52,211,153,.1)',
+    ring: 'conic-gradient(rgba(52,211,153,.6), rgba(16,185,129,.3), rgba(52,211,153,.6))',
+    nameColor: '#6ee7b7',
+    nameShadow: 'rgba(52,211,153,.35)',
+    avBg: 'linear-gradient(135deg,#064e3b,#34d399)',
+  },
+  {
+    role: 'respect',
+    label: 'Respect Person',
+    emoji: '🎖️',
+    color: '#f472b6',
+    border: 'rgba(244,114,182,.2)',
+    borderHot: 'rgba(244,114,182,.55)',
+    shadow: '0 20px 50px rgba(244,114,182,.1)',
+    ring: 'conic-gradient(rgba(244,114,182,.6), rgba(240,171,252,.3), rgba(244,114,182,.6))',
+    nameColor: '#f9a8d4',
+    nameShadow: 'rgba(244,114,182,.35)',
+    avBg: 'linear-gradient(135deg,#831843,#f472b6)',
+  },
+  {
+    role: 'friends',
+    label: 'Friends',
+    emoji: '🤝',
+    color: '#818cf8',
+    border: 'rgba(129,140,248,.2)',
+    borderHot: 'rgba(129,140,248,.5)',
+    shadow: '0 20px 50px rgba(129,140,248,.1)',
+    ring: 'conic-gradient(rgba(129,140,248,.6), rgba(99,102,241,.3), rgba(129,140,248,.6))',
+    nameColor: '#a5b4fc',
+    nameShadow: 'rgba(129,140,248,.3)',
+    avBg: 'linear-gradient(135deg,#1e1b4b,#818cf8)',
+  },
+];
+
+function getInitials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function buildCard(member, cat) {
+  const hasImg = member.pfp_url && member.pfp_url.trim() !== '';
+  const hasIg  = member.instagram && member.instagram.trim() !== '';
+  const igHandle = member.instagram
+    ? (member.instagram.startsWith('@') ? member.instagram : '@' + member.instagram)
+    : '';
+  const igUrl = member.instagram
+    ? 'https://instagram.com/' + member.instagram.replace('@','')
+    : '#';
+
+  return `
+  <div class="m-card" style="
+    --card-border:${cat.border};
+    --card-border-hot:${cat.borderHot};
+    --card-accent:${cat.color};
+    --card-shadow:${cat.shadow};
+  ">
+    <div class="m-av-wrap">
+      ${hasImg
+        ? `<img class="m-av-img" src="${member.pfp_url}" alt="${member.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        : ''}
+      <div class="m-av-fallback" style="background:${cat.avBg};display:${hasImg?'none':'flex'}">${getInitials(member.name)}</div>
+      <div class="m-av-ring" style="background:${cat.ring} border-box;
+        -webkit-mask:linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite:destination-out;mask-composite:exclude;
+        position:absolute;inset:-3px;border-radius:50%;border:2px solid transparent;"></div>
+      <span class="m-badge-icon" style="filter:drop-shadow(0 0 5px ${cat.color})">${cat.emoji}</span>
+    </div>
+    <div class="m-name" style="color:${cat.nameColor};text-shadow:0 0 16px ${cat.nameShadow}">${member.name}</div>
+    <div class="m-role" style="color:${cat.color}">${cat.label}</div>
+    ${hasIg ? `<a class="m-ig" href="${igUrl}" target="_blank" rel="noopener">
+      <span class="m-ig-icon">📸</span>${igHandle}
+    </a>` : ''}
+  </div>`;
+}
+
+function buildTeam(members) {
+  const container = document.getElementById('team-container');
+  if (!members || members.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:.8rem;letter-spacing:2px">NO TEAM MEMBERS FOUND</div>`;
+    return;
+  }
+  let html = '';
+  CATEGORIES.forEach((cat, idx) => {
+    const group = members.filter(m => m.role === cat.role);
+    if (group.length === 0) return;
+    if (idx > 0) {
+      html += `<div class="cat-connector"><div class="cat-conn-line"></div><div class="cat-conn-dot"></div><div class="cat-conn-line"></div></div>`;
+    }
+    html += `<div class="team-category reveal">
+      <div class="cat-header">
+        <div class="cat-badge" style="color:${cat.color};border:1px solid ${cat.border};background:rgba(0,0,0,.2);--cat-color:${cat.color}">${cat.emoji} ${cat.label}</div>
+        <div class="cat-line" style="--cat-color:${cat.color}"></div>
+      </div>
+      <div class="team-grid">${group.map(m => buildCard(m, cat)).join('')}</div>
+    </div>`;
+  });
+  container.innerHTML = html;
+  // Re-observe new reveal elements
+  container.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+async function loadTeam() {
+  // If Supabase not configured, show demo data
+  if (SUPABASE_URL.includes('YOUR_PROJECT')) {
+    buildTeam(DEMO_TEAM);
+    return;
+  }
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/team_members?select=*&order=display_order.asc`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+      }
+    });
+    const data = await res.json();
+    buildTeam(data);
+  } catch(e) {
+    console.error('Supabase error:', e);
+    buildTeam(DEMO_TEAM);
+  }
+}
+
+// Demo data shown until Supabase is connected
+const DEMO_TEAM = [
+  { role:'founder',    name:'H0mieMaster',  pfp_url:'', instagram:'homiescommunity' },
+  { role:'owner',      name:'OwnerX',       pfp_url:'', instagram:'ownerx_ig' },
+  { role:'owner',      name:'OwnerKing',    pfp_url:'', instagram:'' },
+  { role:'coowner',    name:'N3xusVoid',    pfp_url:'', instagram:'nexusvoid' },
+  { role:'coowner',    name:'CyberXR',      pfp_url:'', instagram:'cyberxr_' },
+  { role:'management', name:'ManageG',      pfp_url:'', instagram:'' },
+  { role:'management', name:'SkyAdmin',     pfp_url:'', instagram:'skyadmin' },
+  { role:'respect',    name:'LegendPro',    pfp_url:'', instagram:'legendpro' },
+  { role:'friends',    name:'xFriend01',    pfp_url:'', instagram:'' },
+  { role:'friends',    name:'BroZone',      pfp_url:'', instagram:'brozone_yt' },
+];
+
+loadTeam();
+
+/* ======================== NAV ACTIVE SCROLL ======================== */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current ? 'var(--text)' : '';
+  });
+});
+</script>
+</body>
+</html>
